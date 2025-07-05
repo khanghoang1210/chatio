@@ -7,9 +7,15 @@ import java.net.Socket;
 public class SocketServer implements Runnable{
     private final int port;
 
-    SocketServer(int port) {
+    public SocketServer(int port) {
         this.port = port;
     }
+
+    public void start() {
+        Thread thread = new Thread(this);
+        thread.start();
+    }
+
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
