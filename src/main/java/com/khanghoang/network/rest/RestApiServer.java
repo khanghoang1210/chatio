@@ -1,6 +1,5 @@
 package com.khanghoang.network.rest;
 
-import com.khanghoang.repository.MessageRepository;
 import io.javalin.Javalin;
 
 public class RestApiServer implements Runnable{
@@ -19,12 +18,9 @@ public class RestApiServer implements Runnable{
         });
     }
 
-    public void start() {
-        System.out.println("REST server started on port: " + port);
-        app.start(port);
-    }
     @Override
     public void run() {
-        start();
+        System.out.println("REST server started on port: " + port);
+        app.start(port);
     }
 }
