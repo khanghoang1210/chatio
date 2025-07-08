@@ -1,5 +1,12 @@
 package com.khanghoang.repository;
 
-public interface MessageRepository {
+import com.khanghoang.model.Message;
+import com.khanghoang.protocol.MessageFrame;
 
+import java.util.List;
+
+public interface MessageRepository {
+    void save(MessageFrame message);
+    List<Message> getMessagesForUser(String userId);
+    List<Message> getMessagesInGroup(String groupId);
 }
