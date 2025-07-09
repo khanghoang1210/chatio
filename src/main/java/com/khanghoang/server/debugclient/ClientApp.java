@@ -1,4 +1,4 @@
-package com.khanghoang.debugclient;
+package com.khanghoang.server.debugclient;
 
 import com.khanghoang.protocol.MessageFrame;
 

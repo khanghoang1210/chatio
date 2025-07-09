@@ -1,4 +1,4 @@
-package com.khanghoang.network.rest;
+package com.khanghoang.server.network.rest;
 
 import io.javalin.Javalin;
 

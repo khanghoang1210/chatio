@@ -1,4 +1,4 @@
-package com.khanghoang.database;
+package com.khanghoang.server.database;
 
 import org.postgresql.ds.PGSimpleDataSource;
 

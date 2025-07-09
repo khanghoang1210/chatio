@@ -1,4 +1,4 @@
-package com.khanghoang.network.socket;
+package com.khanghoang.server.network.socket;
 
 import java.io.OutputStream;
 import java.util.Set;

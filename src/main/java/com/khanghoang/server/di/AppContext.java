@@ -1,13 +1,12 @@
-package com.khanghoang.di;
+package com.khanghoang.server.di;
 
-import com.khanghoang.database.DatabaseProvider;
-import com.khanghoang.network.rest.RestApiServer;
-import com.khanghoang.network.socket.SocketServer;
-import com.khanghoang.repository.MessageRepository;
-import com.khanghoang.repository.MessageRepositoryImpl;
+import com.khanghoang.server.database.DatabaseProvider;
+import com.khanghoang.server.network.rest.RestApiServer;
+import com.khanghoang.server.network.socket.SocketServer;
+import com.khanghoang.server.repository.MessageRepository;
+import com.khanghoang.server.repository.MessageRepositoryImpl;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 
 public class AppContext {
     private final RestApiServer restServer;

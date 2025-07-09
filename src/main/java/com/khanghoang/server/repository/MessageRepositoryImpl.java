@@ -1,7 +1,6 @@
-package com.khanghoang.repository;
+package com.khanghoang.server.repository;
 
-import com.khanghoang.database.DatabaseProvider;
-import com.khanghoang.model.Message;
+import com.khanghoang.server.model.Message;
 import com.khanghoang.protocol.MessageFrame;
 
 import javax.sql.DataSource;
@@ -11,25 +10,24 @@ import java.util.List;
 
 public class MessageRepositoryImpl implements MessageRepository{
     private final DataSource dataSource;
+
     public MessageRepositoryImpl(DataSource dataSource) {
         this.dataSource = dataSource;
     }
+
     @Override
     public void save(MessageFrame message) {
         String sql = """
-            INSERT INTO messages(type, sender_id, receiver_id, group_id, content, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO messages( sender_id, conversation_id, content)
+            VALUES (?, ?, ?)
         """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, message.getType());
-            ps.setString(2, message.getFrom());
-            ps.setString(3, message.getTo().isEmpty() ? null : message.getTo());
-            ps.setString(4, message.getRoomId().isEmpty() ? null : message.getRoomId());
-            ps.setString(5, message.getContent());
-            ps.setTimestamp(6, new Timestamp(message.getTimestamp()));
+            ps.setString(1, message.getFrom());
+            ps.setString(2, message.getRoomId().isEmpty() ? null : message.getRoomId());
+            ps.setString(3, message.getContent());
 
             ps.executeUpdate();
 
@@ -64,7 +62,7 @@ public class MessageRepositoryImpl implements MessageRepository{
                         rs.getString("type"),
                         rs.getString("sender_id"),
                         rs.getString("receiver_id"),
-                        rs.getString("group_id"),
+                        rs.getString("conversation_id"),
                         rs.getString("content"),
                         rs.getTimestamp("timestamp")
                 );

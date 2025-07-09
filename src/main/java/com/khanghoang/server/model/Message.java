@@ -1,4 +1,4 @@
-package com.khanghoang.model;
+package com.khanghoang.server.model;
 
 import java.sql.Timestamp;
 

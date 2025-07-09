@@ -1,8 +1,6 @@
-package com.khanghoang;
+package com.khanghoang.server;
 
-import com.khanghoang.di.AppContext;
-
-import java.sql.SQLException;
+import com.khanghoang.server.di.AppContext;
 
 public class ChatioApplication {
     public static void run()  {

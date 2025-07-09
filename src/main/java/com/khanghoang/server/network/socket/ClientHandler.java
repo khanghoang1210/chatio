@@ -1,4 +1,4 @@
-package com.khanghoang.network.socket;
+package com.khanghoang.server.network.socket;
 
 import com.khanghoang.protocol.MessageFrame;
 

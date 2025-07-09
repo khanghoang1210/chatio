@@ -1,6 +1,6 @@
-package com.khanghoang.repository;
+package com.khanghoang.server.repository;
 
-import com.khanghoang.model.Message;
+import com.khanghoang.server.model.Message;
 import com.khanghoang.protocol.MessageFrame;
 
 import java.util.List;
