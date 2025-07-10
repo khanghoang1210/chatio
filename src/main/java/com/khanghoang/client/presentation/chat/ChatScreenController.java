@@ -13,7 +13,11 @@ public class ChatScreenController {
     @FXML private ListView<String> chatList;
 
     private ChatViewModel viewModel;
+    private String currentUsername;
 
+    public void setUsername(String username) {
+        this.currentUsername = username;
+    }
     @FXML
     public void initialize() {
         var client = new com.khanghoang.client.network.ChatClient();
@@ -30,7 +34,7 @@ public class ChatScreenController {
         sendButton.setOnAction(event -> {
             String message = messageInput.getText();
             if (!message.isEmpty()) {
-                viewModel.sendMessage("Alice", "Bob", "room-1", message);
+                viewModel.sendMessage(currentUsername, "Bob", "room-1", message);
                 chatList.getItems().add("Me: " + message);
                 messageInput.clear();
             }

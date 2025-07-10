@@ -1,12 +1,13 @@
 package com.khanghoang.server.network.rest;
 
+import com.khanghoang.server.network.rest.controller.UserController;
 import io.javalin.Javalin;
 
 public class RestApiServer implements Runnable{
     private final Javalin app;
     private final int port;
 
-    public RestApiServer(int port) {
+    public RestApiServer(int port, UserController userController) {
         this.port = port;
 
         app = Javalin.create();
@@ -16,6 +17,9 @@ public class RestApiServer implements Runnable{
         app.get("/messages", ctx -> {
 
         });
+
+        app.post("/users", userController::handleUserRegistration);
+        app.get("/users/{username}", userController::handleLogin);
     }
 
     @Override
