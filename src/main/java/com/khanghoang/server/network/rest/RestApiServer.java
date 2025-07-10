@@ -1,5 +1,6 @@
 package com.khanghoang.server.network.rest;
 
+import com.khanghoang.server.network.rest.controller.ConversationController;
 import com.khanghoang.server.network.rest.controller.UserController;
 import io.javalin.Javalin;
 
@@ -7,7 +8,7 @@ public class RestApiServer implements Runnable{
     private final Javalin app;
     private final int port;
 
-    public RestApiServer(int port, UserController userController) {
+    public RestApiServer(int port, UserController userController, ConversationController conversationController) {
         this.port = port;
 
         app = Javalin.create();
@@ -20,6 +21,10 @@ public class RestApiServer implements Runnable{
 
         app.post("/users", userController::handleUserRegistration);
         app.get("/users/{username}", userController::handleLogin);
+
+        app.post("/conversations", conversationController::handleCreateConversation);
+        app.get("/conversations/user/{userId}", conversationController::handleGetConversationsForUser);
+        app.get("/conversations/{conversationId}", conversationController::handleGetConversationById);
     }
 
     @Override

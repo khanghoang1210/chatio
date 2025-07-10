@@ -9,4 +9,5 @@ public interface ConversationRepository {
     List<Conversation> getConversationsForUser(String userId);
     List<Conversation> getConversationsInGroup(String groupId);
     Conversation getConversationById(String conversationId);
+    int getLatestInsertedId();
 }
