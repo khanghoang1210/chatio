@@ -38,49 +38,10 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public List<Message> getMessagesForUser(String userId) {
-        String sql = """
-            SELECT * FROM messages
-            WHERE sender_id = ? OR receiver_id = ?
-            ORDER BY timestamp DESC
-            LIMIT 100
-        """;
-
-        List<Message> messages = new ArrayList<>();
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, userId);
-            ps.setString(2, userId);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Message msg = new Message(
-                        rs.getLong("id"),
-                        rs.getString("type"),
-                        rs.getString("sender_id"),
-                        rs.getString("receiver_id"),
-                        rs.getString("conversation_id"),
-                        rs.getString("content"),
-                        rs.getTimestamp("timestamp")
-                );
-                messages.add(msg);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return messages;
-    }
-
-    @Override
-    public List<Message> getMessagesInGroup(String groupId) {
+    public List<Message> getMessagesInConversation(String conversationId) {
             String sql = """
             SELECT * FROM messages
-            WHERE group_id = ?
+            WHERE conversation_id = ?
             ORDER BY timestamp DESC
             LIMIT 100
         """;
@@ -90,18 +51,16 @@ public class MessageRepositoryImpl implements MessageRepository{
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement ps = conn.prepareStatement(sql)) {
 
-                ps.setString(1, groupId);
+                ps.setString(1, conversationId);
                 ResultSet rs = ps.executeQuery();
 
                 while (rs.next()) {
                     Message msg = new Message(
                             rs.getLong("id"),
-                            rs.getString("type"),
                             rs.getString("sender_id"),
-                            rs.getString("receiver_id"),
-                            rs.getString("group_id"),
+                            rs.getString("conversation_id"),
                             rs.getString("content"),
-                            rs.getTimestamp("timestamp")
+                            rs.getTimestamp("sent_at")
                     );
                     messages.add(msg);
                 }

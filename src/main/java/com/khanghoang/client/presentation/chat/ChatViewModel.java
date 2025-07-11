@@ -10,9 +10,9 @@ public class ChatViewModel {
         this.repository = repository;
     }
 
-    public void sendMessage(String from, String to, String roomId, String content) {
+    public void sendMessage(String from,String senderName, String to, String roomId, String content) {
         try {
-            repository.sendChat(from, to, roomId, content);
+            repository.sendChat(from, senderName, to, roomId, content);
         } catch (Exception e) {
             e.printStackTrace(); // hoặc báo lỗi lên UI
         }

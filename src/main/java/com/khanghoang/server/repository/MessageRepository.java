@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface MessageRepository {
     void save(MessageFrame message);
-    List<Message> getMessagesForUser(String userId);
-    List<Message> getMessagesInGroup(String groupId);
+    List<Message> getMessagesInConversation(String conversationId);
 }

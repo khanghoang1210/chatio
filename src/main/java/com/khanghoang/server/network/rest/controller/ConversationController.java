@@ -22,10 +22,15 @@ public class ConversationController {
                     request.name,
                     request.isGroup,
                     request.createdBy,
-                    request.participantIds
+                    request.participant
             );
 
-            ctx.status(201).json(conversation);
+            if (conversation != null){
+                ctx.status(201).json(conversation);
+            } else {
+                ctx.status(400).result("Failed to create conversation");
+            }
+
         } catch (Exception e) {
             ctx.status(400).result("Invalid request: " + e.getMessage());
         }
@@ -60,6 +65,6 @@ public class ConversationController {
         public String name;
         public boolean isGroup;
         public int createdBy;
-        public List<Integer> participantIds;
+        public String participant;
     }
 }

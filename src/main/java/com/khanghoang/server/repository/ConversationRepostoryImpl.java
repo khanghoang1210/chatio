@@ -15,26 +15,30 @@ public class ConversationRepostoryImpl implements ConversationRepository {
     }
 
     @Override
-    public void save(Conversation conversation) {
-        String sql = "INSERT INTO conversations (name, is_group, created_by) VALUES (?, ?, ?)";
+    public int save(Conversation conversation) {
+        String sql = "INSERT INTO conversations (name, is_group, created_by) VALUES (?, ?, ?) RETURNING id";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, conversation.getName());
             ps.setBoolean(2, conversation.isGroup());
             ps.setInt(3, conversation.getCreatedBy());
-            ps.executeUpdate();
 
-            ResultSet rs = ps.getGeneratedKeys();
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                conversation.setId(rs.getInt(1));
+                int id = rs.getInt("id");
+                conversation.setId(id); // optional
+                return id;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return -1; // or throw exception
     }
+
 
     @Override
     public List<Conversation> getConversationsForUser(String userId) {

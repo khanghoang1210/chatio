@@ -1,10 +1,9 @@
 package com.khanghoang.server.repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParticipantRepositoryImpl implements ParticipantRepository{
     private final DataSource dataSource;
@@ -29,4 +28,27 @@ public class ParticipantRepositoryImpl implements ParticipantRepository{
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<Integer> getParticipantIds(int conversationId) {
+        List<Integer> userIds = new ArrayList<>();
+        String sql = "SELECT user_id FROM participants WHERE conversation_id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, conversationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    userIds.add(rs.getInt("user_id"));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userIds;
+    }
+
 }

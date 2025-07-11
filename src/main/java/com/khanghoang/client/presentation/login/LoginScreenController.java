@@ -1,6 +1,8 @@
 package com.khanghoang.client.presentation.login;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.khanghoang.client.model.User;
 import com.khanghoang.client.presentation.chat.ChatScreenController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -18,7 +21,7 @@ public class LoginScreenController {
 
     @FXML private TextField usernameInput;
     @FXML private Label statusLabel;
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @FXML
     private void handleLogin() {
         String username = usernameInput.getText().trim();
@@ -36,13 +39,16 @@ public class LoginScreenController {
 
             int responseCode = conn.getResponseCode();
             if (responseCode == 200 || responseCode == 201) {
+                InputStream is = conn.getInputStream();
+
+                User user = objectMapper.readValue(is, User.class);
                 statusLabel.setText("Login successful!");
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/khanghoang/client/ChatScreen.fxml"));
                 Parent root = loader.load();
 
                 ChatScreenController controller = loader.getController();
-                controller.setUsername(username);
+                controller.setUser(user);
 
                 Stage stage = (Stage) usernameInput.getScene().getWindow();
                 stage.setScene(new Scene(root));

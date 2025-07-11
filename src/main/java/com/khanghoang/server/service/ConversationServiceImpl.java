@@ -1,8 +1,11 @@
 package com.khanghoang.server.service;
 
 import com.khanghoang.server.model.Conversation;
+import com.khanghoang.server.model.User;
 import com.khanghoang.server.repository.ConversationRepository;
 import com.khanghoang.server.repository.ParticipantRepository;
+import com.khanghoang.server.repository.UserRepository;
+import com.khanghoang.server.repository.UserRepositoryImpl;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,36 +15,40 @@ public class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
 
-    public ConversationServiceImpl(ConversationRepository conversationRepository, ParticipantRepository participantRepository) {
+    public ConversationServiceImpl(ConversationRepository conversationRepository, ParticipantRepository participantRepository, UserRepository userRepository) {
         this.conversationRepository = conversationRepository;
         this.participantRepository = participantRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Conversation createConversation(String name, boolean isGroup, int createdBy, List<Integer> participantIds) {
+    public Conversation createConversation(String name, boolean isGroup, int createdBy, String username) {
+        // Tạo conversation mới
         Conversation conversation = new Conversation();
         conversation.setName(name);
         conversation.setGroup(isGroup);
         conversation.setCreatedBy(createdBy);
 
-        conversationRepository.save(conversation);
-        int conversationId = conversationRepository.getLatestInsertedId(); // bạn cần implement thêm hàm này nếu chưa có
-
-        // Thêm người tạo + các participants khác
-        List<Integer> allParticipants = new ArrayList<>(participantIds);
-        if (!allParticipants.contains(createdBy)) {
-            allParticipants.add(createdBy);
+        User otherUser = userRepository.getByUsername(username);
+        if(otherUser == null) {
+            return null;
         }
 
-        for (int userId : allParticipants) {
-            if (userId == createdBy) continue;
-            participantRepository.addParticipant(conversationId, userId);
+        int id = conversationRepository.save(conversation);
+
+        participantRepository.addParticipant(id, createdBy);
+
+
+        if (otherUser != null && otherUser.getId() != createdBy) {
+            participantRepository.addParticipant(id, otherUser.getId());
         }
 
-        conversation.setId(conversationId);
+        conversation.setId(id);
         return conversation;
     }
+
 
     @Override
     public List<Conversation> getConversationsForUser(int userId) {

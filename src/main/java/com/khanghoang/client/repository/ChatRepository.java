@@ -11,8 +11,8 @@ public class ChatRepository {
         this.client = client;
     }
 
-    public void sendChat(String from, String to, String roomId, String content) throws Exception {
-        MessageFrame frame = new MessageFrame("private", from, to, roomId, System.currentTimeMillis(), content);
+    public void sendChat(String from, String senderName, String to, String roomId, String content) throws Exception {
+        MessageFrame frame = new MessageFrame("private", from, senderName, to, roomId, System.currentTimeMillis(), content);
         client.sendMessage(frame);
     }
 }

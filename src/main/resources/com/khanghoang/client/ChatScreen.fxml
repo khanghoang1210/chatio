@@ -1,25 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.Priority?>
+<?import javafx.scene.control.Label?>
 
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.khanghoang.client.presentation.chat.ChatScreenController">
 
-    <VBox spacing="10.0" AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+    <SplitPane AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <!-- Left pane: Conversation List -->
+        <VBox prefWidth="250.0" spacing="10.0" maxWidth="300.0" minWidth="200.0">
 
+            <Label text="Conversations" style="-fx-font-weight: bold;" />
+            <ListView fx:id="conversationList" VBox.vgrow="ALWAYS"/>
 
+            <!-- New Chat Form -->
+            <Label text="New Group Name:" />
+            <TextField fx:id="groupNameInput" promptText="Group name" />
 
-        <ListView fx:id="chatList" prefHeight="350.0" VBox.vgrow="ALWAYS"/>
+            <Label text="Add Username:" />
+            <TextField fx:id="userToAddInput" promptText="e.g., alice" />
 
-        <HBox spacing="10.0">
-            <TextField fx:id="messageInput" HBox.hgrow="ALWAYS"/>
-            <Button fx:id="sendButton" text="Send" onAction="#sendMessage"/>
-        </HBox>
-    </VBox>
+            <Button text="Create Chat" onAction="#handleCreateConversation" />
+        </VBox>
+
+        <!-- Right pane: Chat messages -->
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+            <Label text="Messages" style="-fx-font-weight: bold;" />
+            <ListView fx:id="chatList" VBox.vgrow="ALWAYS" />
+            <HBox spacing="10.0">
+                <TextField fx:id="messageInput" HBox.hgrow="ALWAYS" promptText="Type a message..." />
+                <Button fx:id="sendButton" text="Send" onAction="#sendMessage"/>
+            </HBox>
+        </VBox>
+    </SplitPane>
+
 </AnchorPane>

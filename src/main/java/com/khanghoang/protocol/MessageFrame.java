@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 public class MessageFrame {
         public String type;
         public String from;
+        public String senderName;
         public String to;
         public String roomId;
         public long timestamp;
@@ -13,32 +14,40 @@ public class MessageFrame {
 
         public MessageFrame() {}
 
-        public MessageFrame(String type, String from, String to, String roomId, long timestamp, String content) {
+        public MessageFrame(String type, String from, String senderName, String to, String roomId, long timestamp, String content) {
                 this.type = type;
                 this.from = from;
+                this.senderName = senderName;
                 this.to = to;
                 this.roomId = roomId;
                 this.timestamp = timestamp;
                 this.content = content;
         }
 
+        public void setSenderName(String senderName) { this.senderName = senderName; }
+        public String getSenderName() { return senderName; }
         public String getType()     { return type; }
         public String getFrom()     { return from; }
+        public void setFrom(String from) { this.from = from; }
         public String getTo()       { return to; }
         public String getRoomId()   { return roomId; }
+        public void setRoomId(String roomId) { this.roomId = roomId; }
         public long getTimestamp()  { return timestamp; }
         public String getContent()  { return content; }
+        public void setContent(String content) { this.content = content; }
 
         // ====== Encode method ======
         public byte[] encode() {
                 byte[] typeBytes = getBytes(type);
                 byte[] fromBytes = getBytes(from);
+                byte[] senderNameBytes = getBytes(senderName);
                 byte[] toBytes = getBytes(to);
                 byte[] roomBytes = getBytes(roomId);
                 byte[] contentBytes = getBytes(content);
 
                 int totalSize = Integer.BYTES + typeBytes.length +
                         Integer.BYTES + fromBytes.length +
+                        Integer.BYTES + senderNameBytes.length +
                         Integer.BYTES + toBytes.length +
                         Integer.BYTES + roomBytes.length +
                         Long.BYTES +
@@ -48,6 +57,7 @@ public class MessageFrame {
 
                 putString(buffer, typeBytes);
                 putString(buffer, fromBytes);
+                putString(buffer, senderNameBytes);
                 putString(buffer, toBytes);
                 putString(buffer, roomBytes);
 
@@ -64,12 +74,13 @@ public class MessageFrame {
 
                 String type = getString(buffer);
                 String from = getString(buffer);
+                String senderName = getString(buffer);
                 String to = getString(buffer);
                 String roomId = getString(buffer);
                 long timestamp = buffer.getLong();
                 String content = getString(buffer);
 
-                return new MessageFrame(type, from, to, roomId, timestamp, content);
+                return new MessageFrame(type, from, senderName, to, roomId, timestamp, content);
         }
 
         // ====== Helpers ======

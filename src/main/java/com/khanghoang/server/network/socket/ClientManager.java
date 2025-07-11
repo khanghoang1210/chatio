@@ -1,30 +1,38 @@
 package com.khanghoang.server.network.socket;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientManager {
-    private static final Set<OutputStream> clientOutputs = ConcurrentHashMap.newKeySet();
+    private static final Map<String, OutputStream> clientMap = new ConcurrentHashMap<>();
 
-    public static void addClient(OutputStream out) {
-        clientOutputs.add(out);
+    public static void registerClient(String userId, OutputStream out) {
+        clientMap.put(userId, out);
     }
 
-    public static void removeClient(OutputStream out) {
-        clientOutputs.remove(out);
+    public static void removeClient(String userId) {
+        clientMap.remove(userId);
     }
 
-    public static void broadcast(byte[] message, OutputStream exclude) {
-        for (OutputStream out : clientOutputs) {
-            if (out != exclude) {
-                try {
-                    byte[] lengthBytes = intToByteArray(message.length);
-                    out.write(lengthBytes);
-                    out.write(message);
-                    out.flush();
-                } catch (Exception e) {
-                    System.out.println("Failed to send to one client: " + e.getMessage());
+    public static void broadcastToRoom(String roomId, String senderId, byte[] message, List<String> participants) {
+        System.out.println("Broadcasting to participants: " + participants);
+
+        for (String userId : participants) {
+            if (!userId.equals(senderId)) {
+                OutputStream out = clientMap.get(userId);
+                if (out != null) {
+                    try {
+                        byte[] lengthBytes = intToByteArray(message.length);
+                        out.write(lengthBytes);
+                        out.write(message);
+                        out.flush();
+                    } catch (IOException e) {
+                        System.out.println("Failed to send to userId " + userId + ": " + e.getMessage());
+                    }
                 }
             }
         }
@@ -39,3 +47,4 @@ public class ClientManager {
         };
     }
 }
+
