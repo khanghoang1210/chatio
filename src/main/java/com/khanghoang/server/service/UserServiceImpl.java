@@ -1,9 +1,10 @@
 package com.khanghoang.server.service;
 
 import com.khanghoang.server.model.User;
-import com.khanghoang.server.repository.UserRepository;
+import com.khanghoang.server.repository.interfaces.UserRepository;
+import com.khanghoang.server.service.interfaces.UserService;
 
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     public UserServiceImpl(UserRepository repository) {

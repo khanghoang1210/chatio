@@ -1,7 +1,7 @@
 package com.khanghoang.server.network.rest.controller;
 
 import com.khanghoang.server.model.User;
-import com.khanghoang.server.service.UserService;
+import com.khanghoang.server.service.interfaces.UserService;
 import io.javalin.http.Context;
 
 public class UserController {

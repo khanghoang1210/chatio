@@ -1,6 +1,7 @@
 package com.khanghoang.server.repository;
 
 import com.khanghoang.server.model.User;
+import com.khanghoang.server.repository.interfaces.UserRepository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

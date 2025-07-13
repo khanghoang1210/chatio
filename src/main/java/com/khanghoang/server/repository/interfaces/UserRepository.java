@@ -1,9 +1,9 @@
-package com.khanghoang.server.service;
+package com.khanghoang.server.repository.interfaces;
 
 import com.khanghoang.server.model.User;
 
-public interface UserService {
-    void register(String username);
+public interface UserRepository {
+    void save(User user);
     User getByUsername(String username);
     User getByUserId(int userId);
 }
