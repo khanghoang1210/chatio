@@ -3,6 +3,9 @@ package com.khanghoang.server.network.rest;
 import com.khanghoang.server.network.rest.controller.ConversationController;
 import com.khanghoang.server.network.rest.controller.MessageController;
 import com.khanghoang.server.network.rest.controller.UserController;
+import com.khanghoang.server.network.rest.routes.ConversationRouter;
+import com.khanghoang.server.network.rest.routes.MessageRouter;
+import com.khanghoang.server.network.rest.routes.UserRouter;
 import io.javalin.Javalin;
 
 public class RestApiServer implements Runnable{
@@ -14,14 +17,9 @@ public class RestApiServer implements Runnable{
 
         app = Javalin.create();
 
-        app.get("/users/{username}", userController::handleLogin);
-
-        app.post("/conversations", conversationController::handleCreateConversation);
-        app.get("/conversations/user/{userId}", conversationController::handleGetConversationsForUser);
-        app.get("/conversations/{conversationId}", conversationController::handleGetConversationById);
-
-        app.get("/messages/{conversationId}", messageController::handleGetMessagesByConversation);
-        app.post("/messages", messageController::handlePostMessage);
+        UserRouter.register(app, userController);
+        ConversationRouter.register(app, conversationController);
+        MessageRouter.register(app, messageController);
     }
 
     @Override

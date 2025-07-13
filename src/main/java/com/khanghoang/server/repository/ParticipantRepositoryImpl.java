@@ -1,11 +1,13 @@
 package com.khanghoang.server.repository;
 
+import com.khanghoang.server.repository.interfaces.ParticipantRepository;
+
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParticipantRepositoryImpl implements ParticipantRepository{
+public class ParticipantRepositoryImpl implements ParticipantRepository {
     private final DataSource dataSource;
 
     public ParticipantRepositoryImpl(DataSource dataSource) {

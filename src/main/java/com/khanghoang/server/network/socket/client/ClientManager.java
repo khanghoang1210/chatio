@@ -1,11 +1,12 @@
-package com.khanghoang.server.network.socket;
+package com.khanghoang.server.network.socket.client;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.khanghoang.server.util.Converter.intToByteArray;
 
 public class ClientManager {
     private static final Map<String, OutputStream> clientMap = new ConcurrentHashMap<>();
@@ -18,7 +19,7 @@ public class ClientManager {
         clientMap.remove(userId);
     }
 
-    public static void broadcastToRoom(String roomId, String senderId, byte[] message, List<String> participants) {
+    public static void broadcastToRoom(String senderId, byte[] message, List<String> participants) {
         System.out.println("Broadcasting to participants: " + participants);
 
         for (String userId : participants) {
@@ -38,13 +39,6 @@ public class ClientManager {
         }
     }
 
-    private static byte[] intToByteArray(int value) {
-        return new byte[] {
-                (byte) (value >> 24),
-                (byte) (value >> 16),
-                (byte) (value >> 8),
-                (byte) value
-        };
-    }
+
 }
 

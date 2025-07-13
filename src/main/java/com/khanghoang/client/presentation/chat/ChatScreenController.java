@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khanghoang.client.model.Conversation;
 import com.khanghoang.client.model.Message;
 import com.khanghoang.client.model.User;
-import com.khanghoang.client.network.ChatClient;
+import com.khanghoang.client.network.SocketClient;
+import com.khanghoang.client.service.ConversationService;
+import com.khanghoang.client.service.MessageService;
 import com.khanghoang.protocol.MessageFrame;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,16 +29,20 @@ public class ChatScreenController {
     @FXML private TextField groupNameInput;
     @FXML private TextField userToAddInput;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Map<String, Integer> conversationMap = new HashMap<>();
-    private int currentConversationId = -1;
+    private final Map<Integer, List<String>> messageMap = new HashMap<>();
+    private final Map<String, Integer> conversationMap = new HashMap<>(); // name -> id
+    private final Map<Integer, String> conversationIdToName = new HashMap<>(); // id -> name
+    private final Map<Integer, Integer> unreadCountMap = new HashMap<>();
+    private final ConversationService conversationService = new ConversationService();
+    private final MessageService messageService = new MessageService();
 
+    private int currentConversationId = -1;
     private User currentUser;
-    private ChatClient client;
+    private SocketClient client;
 
     public void setUser(User user) {
         this.currentUser = user;
-        this.client = new ChatClient();
+        this.client = new SocketClient();
 
         connectSocketAndRegister(user.getId());
         loadConversations();
@@ -44,13 +50,14 @@ public class ChatScreenController {
 
     private void connectSocketAndRegister(int userId) {
         try {
-            client.connect("localhost", 9000); // socket server port
+            client.connect("localhost", 9000);
+
             MessageFrame registerFrame = new MessageFrame();
             registerFrame.setFrom(String.valueOf(userId));
             registerFrame.setSenderName(currentUser.getUsername());
             client.sendMessage(registerFrame);
-            System.out.println("[CLIENT] Registered with server as: " + userId);
 
+            System.out.println("[CLIENT] Registered with server as: " + userId);
             client.startReceiving(this::handleIncomingMessage);
 
         } catch (Exception e) {
@@ -59,12 +66,30 @@ public class ChatScreenController {
     }
 
     private void handleIncomingMessage(MessageFrame frame) {
-        System.out.println("[CLIENT RECEIVED] " + frame.getContent() + " from " + frame.getFrom());
+        int conversationId = Integer.parseInt(frame.getRoomId());
+        String formatted = frame.getSenderName() + ": " + frame.getContent();
+        System.out.println("Received: [" + frame.getContent() + "] from " + frame.getSenderName());
 
-        if (frame.getRoomId() != null && frame.getRoomId().equals(String.valueOf(currentConversationId))) {
-            Platform.runLater(() -> {
-                chatList.getItems().add(frame.getSenderName() + ": " + frame.getContent());
-            });
+
+        // Lưu vào messageMap
+        messageMap.computeIfAbsent(conversationId, k -> new ArrayList<>()).add(formatted);
+
+        if (conversationId == currentConversationId) {
+            Platform.runLater(() -> chatList.getItems().add(frame.getSenderName() + ": " + frame.getContent()));
+        } else {
+            unreadCountMap.put(conversationId, unreadCountMap.getOrDefault(conversationId, 0) + 1);
+            Platform.runLater(this::updateConversationListUI);
+        }
+    }
+
+    private void updateConversationListUI() {
+        conversationList.getItems().clear();
+        for (Map.Entry<String, Integer> entry : conversationMap.entrySet()) {
+            String name = entry.getKey();
+            int id = entry.getValue();
+            int unread = unreadCountMap.getOrDefault(id, 0);
+            String display = unread > 0 ? name + " (" + unread + " new)" : name;
+            conversationList.getItems().add(display);
         }
     }
 
@@ -80,10 +105,8 @@ public class ChatScreenController {
     @FXML
     private void sendMessage() {
         String message = messageInput.getText().trim();
-        if (message.isEmpty()) return;
-
-        if (currentConversationId == -1) {
-            System.out.println("No conversation selected.");
+        if (message.isEmpty() || currentConversationId == -1) {
+            System.out.println("No message or no conversation selected.");
             return;
         }
 
@@ -95,7 +118,9 @@ public class ChatScreenController {
 
         try {
             client.sendMessage(frame);
-            chatList.getItems().add("You: " + message);
+            String formatted = "You: " + message;
+            messageMap.computeIfAbsent(currentConversationId, k -> new ArrayList<>()).add(formatted);
+            chatList.getItems().add(formatted);
             messageInput.clear();
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,51 +138,28 @@ public class ChatScreenController {
         }
 
         try {
-            URL url = new URL("http://localhost:8080/conversations");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            String body = String.format("""
-            {
-                "name": "%s",
-                "createdBy": %d,
-                "isGroup": true,
-                "participant": "%s"
-            }
-            """, groupName, currentUser.getId(), usernameToAdd);
-
-            conn.getOutputStream().write(body.getBytes());
-
-            int code = conn.getResponseCode();
-            if (code == 200 || code == 201) {
-                System.out.println("Conversation created");
-                conversationList.getItems().clear();
-                conversationMap.clear();
-                loadConversations();
-            } else {
-                System.out.println("Failed to create conversation");
-            }
+            conversationService.createGroupConversation(groupName, currentUser.getId(), usernameToAdd);
+            System.out.println("Conversation created");
+            loadConversations();
         } catch (Exception e) {
+            System.out.println("Failed to create conversation");
             e.printStackTrace();
         }
     }
 
     private void loadConversations() {
         try {
-            URL url = new URL("http://localhost:8080/conversations/user/" + currentUser.getId());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-Type", "application/json");
+            List<Conversation> conversations = conversationService.getConversationsForUser(currentUser.getId());
 
-            InputStream is = conn.getInputStream();
-            List<Conversation> conversations = objectMapper.readValue(is, new TypeReference<>() {});
+            conversationMap.clear();
+            conversationIdToName.clear();
+
             for (Conversation conv : conversations) {
-                conversationList.getItems().add(conv.getName());
                 conversationMap.put(conv.getName(), conv.getId());
+                conversationIdToName.put(conv.getId(), conv.getName());
             }
 
+            updateConversationListUI();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,15 +168,31 @@ public class ChatScreenController {
     private void handleConversationClick() {
         String selected = conversationList.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            Integer conversationId = conversationMap.get(selected);
+            String baseName = selected.replaceAll(" \\(\\d+ new\\)", "");
+            Integer conversationId = conversationMap.get(baseName);
+
             if (conversationId != null) {
                 currentConversationId = conversationId;
+                unreadCountMap.remove(conversationId);
+                updateConversationListUI();
                 loadMessages(conversationId);
             }
         }
     }
 
     private void loadMessages(int conversationId) {
-
+        new Thread(() -> {
+            try {
+                List<Message> messages = messageService.getMessagesByConversationId(conversationId);
+                Platform.runLater(() -> {
+                    chatList.getItems().clear();
+                    for (Message msg : messages) {
+                        chatList.getItems().add(msg.renderContent(currentUser.getId()));
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

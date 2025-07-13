@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.function.Consumer;
 
-public class ChatClient {
+public class SocketClient {
     private Socket socket;
     private DataOutputStream output;
 

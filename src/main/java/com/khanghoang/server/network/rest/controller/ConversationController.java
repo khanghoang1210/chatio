@@ -1,7 +1,7 @@
 package com.khanghoang.server.network.rest.controller;
 
 import com.khanghoang.server.model.Conversation;
-import com.khanghoang.server.service.ConversationService;
+import com.khanghoang.server.service.interfaces.ConversationService;
 import io.javalin.http.Context;
 
 import java.util.List;

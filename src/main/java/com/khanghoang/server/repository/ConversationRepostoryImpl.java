@@ -1,6 +1,7 @@
 package com.khanghoang.server.repository;
 
 import com.khanghoang.server.model.Conversation;
+import com.khanghoang.server.repository.interfaces.ConversationRepository;
 
 import javax.sql.DataSource;
 import java.sql.*;

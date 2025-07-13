@@ -1,9 +1,9 @@
 package com.khanghoang.client.presentation.login;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khanghoang.client.model.User;
 import com.khanghoang.client.presentation.chat.ChatScreenController;
+import com.khanghoang.client.service.AuthService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,16 +12,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 public class LoginScreenController {
-
+    private final AuthService authService = new AuthService();
     @FXML private TextField usernameInput;
     @FXML private Label statusLabel;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @FXML
     private void handleLogin() {
         String username = usernameInput.getText().trim();
@@ -32,33 +27,22 @@ public class LoginScreenController {
         }
 
         try {
-            URL url = new URL("http://localhost:8080/users/" + username);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-Type", "application/json");
+            User user = authService.login(username);
+            statusLabel.setText("Login successful!");
 
-            int responseCode = conn.getResponseCode();
-            if (responseCode == 200 || responseCode == 201) {
-                InputStream is = conn.getInputStream();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/khanghoang/client/ChatScreen.fxml"));
+            Parent root = loader.load();
 
-                User user = objectMapper.readValue(is, User.class);
-                statusLabel.setText("Login successful!");
+            ChatScreenController controller = loader.getController();
+            controller.setUser(user);
 
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/khanghoang/client/ChatScreen.fxml"));
-                Parent root = loader.load();
+            Stage stage = (Stage) usernameInput.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Chat - " + username);
+            stage.show();
 
-                ChatScreenController controller = loader.getController();
-                controller.setUser(user);
-
-                Stage stage = (Stage) usernameInput.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("Chat - " + username);
-                stage.show();
-            } else {
-                statusLabel.setText("Failed to login. Code: " + responseCode);
-            }
         } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Login failed: " + e.getMessage());
             e.printStackTrace();
         }
     }

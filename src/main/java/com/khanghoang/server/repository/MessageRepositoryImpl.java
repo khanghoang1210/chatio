@@ -1,14 +1,15 @@
 package com.khanghoang.server.repository;
 
+import com.khanghoang.server.dto.MessageRes;
 import com.khanghoang.server.model.Message;
-import com.khanghoang.protocol.MessageFrame;
+import com.khanghoang.server.repository.interfaces.MessageRepository;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageRepositoryImpl implements MessageRepository{
+public class MessageRepositoryImpl implements MessageRepository {
     private final DataSource dataSource;
 
     public MessageRepositoryImpl(DataSource dataSource) {
@@ -16,7 +17,7 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public void save(MessageFrame message) {
+    public void save(Message message) {
         String sql = """
             INSERT INTO messages( sender_id, conversation_id, content)
             VALUES (?, ?, ?)
@@ -25,8 +26,8 @@ public class MessageRepositoryImpl implements MessageRepository{
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, message.getFrom());
-            ps.setString(2, message.getRoomId().isEmpty() ? null : message.getRoomId());
+            ps.setInt(1, message.getSenderId());
+            ps.setInt(2, message.getConversationId() == -1 ? null : message.getConversationId());
             ps.setString(3, message.getContent());
 
             ps.executeUpdate();
@@ -38,27 +39,31 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public List<Message> getMessagesInConversation(String conversationId) {
+    public List<MessageRes> getMessagesInConversation(String conversationId) {
             String sql = """
-            SELECT * FROM messages
-            WHERE conversation_id = ?
-            ORDER BY timestamp DESC
-            LIMIT 100
+            SELECT m.*, u.username
+                     FROM messages m
+                     JOIN users u ON m.sender_id = u.id
+                     WHERE m.conversation_id = ?
+                     ORDER BY m.sent_at DESC
+                     LIMIT 100;
+                     
         """;
 
-            List<Message> messages = new ArrayList<>();
+            List<MessageRes> messages = new ArrayList<>();
 
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement ps = conn.prepareStatement(sql)) {
 
-                ps.setString(1, conversationId);
+                ps.setInt(1, Integer.parseInt(conversationId));
                 ResultSet rs = ps.executeQuery();
 
                 while (rs.next()) {
-                    Message msg = new Message(
+                    MessageRes msg = new MessageRes(
                             rs.getLong("id"),
-                            rs.getString("sender_id"),
-                            rs.getString("conversation_id"),
+                            rs.getInt("sender_id"),
+                            rs.getString("username"),
+                            rs.getInt("conversation_id"),
                             rs.getString("content"),
                             rs.getTimestamp("sent_at")
                     );

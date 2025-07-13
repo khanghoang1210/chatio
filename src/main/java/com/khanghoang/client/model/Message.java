@@ -1,20 +1,39 @@
 package com.khanghoang.client.model;
 
 
-public class Message {
-    private final String sender;
-    private final String content;
+import java.sql.Timestamp;
 
-    public Message(String sender, String content) {
-        this.sender = sender;
+public class Message {
+    private long id;
+    private int conversationId;
+    private int senderId;
+    private String senderUsername;
+    private String content;
+    private Timestamp sentAt;
+
+    public Message() {}
+    public Message(String senderUserName, String content) {
+        this.senderUsername = senderUsername;
         this.content = content;
     }
 
-    public String getSender() { return sender; }
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
+    public String getSenderUsername() { return senderUsername; }
     public String getContent() { return content; }
+    public int getConversationId() { return conversationId; }
+    public void setConversationId(int conversationId) { this.conversationId = conversationId; }
+    public int getSenderId() { return senderId; }
+    public void setSenderId(int senderId) { this.senderId = senderId; }
+    public Timestamp getSentAt() { return sentAt; }
+    public void setSentAt(Timestamp sentAt) { this.sentAt = sentAt; }
 
-    @Override
-    public String toString() {
-        return sender + ": " + content;
+    public String renderContent(int currentUserId) {
+        if (this.senderId == currentUserId) {
+            return "You: " + content;
+        } else {
+            return senderUsername + ": " + content;
+        }
     }
+
 }

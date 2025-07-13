@@ -1,4 +1,4 @@
-package com.khanghoang.server.service;
+package com.khanghoang.server.service.interfaces;
 
 import com.khanghoang.server.model.Conversation;
 

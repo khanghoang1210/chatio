@@ -1,19 +1,25 @@
-package com.khanghoang.server.network.socket;
+package com.khanghoang.server.network.socket.client;
 
 import com.khanghoang.protocol.MessageFrame;
+import com.khanghoang.server.model.Message;
+import com.khanghoang.server.processor.MessageProcessor;
 import com.khanghoang.server.util.ConversationUtil;
+import com.khanghoang.server.util.Converter;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
+
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private String userId;
     private OutputStream output;
+    private MessageProcessor processor;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, MessageProcessor processor) {
         this.socket = socket;
+        this.processor = processor;
     }
 
     @Override
@@ -27,18 +33,13 @@ public class ClientHandler implements Runnable {
                 byte[] lengthBytes = input.readNBytes(4);
                 if (lengthBytes.length < 4) break;
 
-                int messageLength = byteArrayToInt(lengthBytes);
+                int messageLength = Converter.byteArrayToInt(lengthBytes);
                 byte[] rawMessage = input.readNBytes(messageLength);
                 if (rawMessage.length < messageLength) break;
 
                 MessageFrame message = MessageFrame.decode(rawMessage);
 
-                if (message.getRoomId() == null || message.getRoomId().isEmpty()) {
-                    System.out.println("[WARNING] Received message without roomId, skipping...");
-                    continue;
-                }
 
-                // Nếu chưa đăng ký userId, thì đây là message đầu tiên
                 if (userId == null) {
                     userId = message.getFrom();
                     if (userId == null || userId.isEmpty()) {
@@ -49,10 +50,20 @@ public class ClientHandler implements Runnable {
                     System.out.println("User " + userId + " connected.");
                 }
 
+                if (message.getRoomId() == null || message.getRoomId().isEmpty()) {
+                    System.out.println("[WARNING] Received message without roomId, skipping...");
+                    continue;
+                }
+                Message newMsg = new Message();
+                newMsg.setSenderId(Integer.parseInt(message.getFrom()));
+                newMsg.setConversationId(Integer.parseInt(message.getRoomId()));
+                newMsg.setContent(message.getContent());
+
                 System.out.println("[RECEIVED] " + message.getContent() + " from " + message.getFrom() + " in room " + message.getRoomId());
+                processor.handleIncomingMessage(newMsg);
 
                 List<String> participants = ConversationUtil.getParticipantUserIds(message.getRoomId());
-                ClientManager.broadcastToRoom(message.getRoomId(), message.getFrom(), rawMessage, participants);
+                ClientManager.broadcastToRoom(message.getFrom(), rawMessage, participants);
             }
 
         } catch (IOException e) {
@@ -67,10 +78,5 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private int byteArrayToInt(byte[] bytes) {
-        return (bytes[0] & 0xFF) << 24 |
-                (bytes[1] & 0xFF) << 16 |
-                (bytes[2] & 0xFF) << 8 |
-                (bytes[3] & 0xFF);
-    }
+
 }

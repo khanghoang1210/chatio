@@ -2,13 +2,12 @@ package com.khanghoang.server.service;
 
 import com.khanghoang.server.model.Conversation;
 import com.khanghoang.server.model.User;
-import com.khanghoang.server.repository.ConversationRepository;
-import com.khanghoang.server.repository.ParticipantRepository;
-import com.khanghoang.server.repository.UserRepository;
-import com.khanghoang.server.repository.UserRepositoryImpl;
+import com.khanghoang.server.repository.interfaces.ConversationRepository;
+import com.khanghoang.server.repository.interfaces.ParticipantRepository;
+import com.khanghoang.server.repository.interfaces.UserRepository;
+import com.khanghoang.server.service.interfaces.ConversationService;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ConversationServiceImpl implements ConversationService {

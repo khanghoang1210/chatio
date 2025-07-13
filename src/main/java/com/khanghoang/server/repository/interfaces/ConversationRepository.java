@@ -1,4 +1,4 @@
-package com.khanghoang.server.repository;
+package com.khanghoang.server.repository.interfaces;
 
 import com.khanghoang.server.model.Conversation;
 
